@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -9,32 +8,10 @@ class Empleado extends Model
 {
     use HasFactory;
 
-    /**
-     * The table associated with the model.
-     *
-     * @var string
-     */
     protected $table = 'empleados';
-
-    /**
-     * The primary key associated with the table.
-     *
-     * @var string
-     */
     protected $primaryKey = 'id_empleado';
-
-    /**
-     * Indicates if the model should be timestamped.
-     *
-     * @var bool
-     */
     public $timestamps = false;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'nombre_empleado',
         'apellido_p',
@@ -49,6 +26,22 @@ class Empleado extends Model
     public function areaAsignacion()
     {
         return $this->belongsTo(AreaAsignacion::class, 'fk_area_trabajo', 'id_asignacion');
+    }
+
+    /**
+     * Relación con Usuario (un empleado puede tener un usuario)
+     */
+    public function usuario()
+    {
+        return $this->hasOne(User::class, 'fk_idempleado', 'id_empleado');
+    }
+
+    /**
+     * Verificar si el empleado ya tiene un usuario asignado
+     */
+    public function tieneUsuario()
+    {
+        return $this->usuario()->exists();
     }
 
     /**

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Modelo;
 use App\Models\Marca;
+use Illuminate\View\View;
 
 class ModeloController extends Controller
 {
@@ -13,7 +14,7 @@ class ModeloController extends Controller
         $query = Modelo::with('marca');
 
         if ($request->filled('nombre_modelo')) {
-            $query->where('nombre_modelo', 'like', '%'.$request->nombre_modelo.'%');
+            $query->where('nombre_modelo', 'like', '%' . $request->nombre_modelo . '%');
         }
 
         if ($request->filled('fk_marca')) {
@@ -48,6 +49,18 @@ class ModeloController extends Controller
         return redirect()->route('modelo.index');
     }
 
+    public function show($id)
+    {
+        $modelo = Modelo::with('marca')->findOrFail($id);
+
+        if (request()->ajax()) {
+            return view('modelo.modal', compact('modelo'));
+        }
+
+        return view('modelo.show', compact('modelo'));
+    }
+
+
     public function edit($id)
     {
         $modelo = Modelo::findOrFail($id);
@@ -61,11 +74,31 @@ class ModeloController extends Controller
         $request->validate([
             'nombre_modelo' => 'required|string|max:150',
             'fk_marca'      => 'required|integer',
+            'status'        => 'required|boolean',
         ]);
 
         $modelo = Modelo::findOrFail($id);
-        $modelo->update($request->all());
 
-        return redirect()->route('modelo.index');
+        $modelo->update([
+            'nombre_modelo' => $request->nombre_modelo,
+            'fk_marca'      => $request->fk_marca,
+            'status'        => $request->status,
+        ]);
+
+        return redirect()
+            ->route('modelo.index')
+            ->with('success', 'Modelo actualizado correctamente');
+    }
+
+    public function destroy($id)
+    {
+        $modelo = Modelo::findOrFail($id);
+
+        // Eliminado físico
+        $modelo->delete();
+
+        return redirect()
+            ->route('modelo.index')
+            ->with('success', 'Modelo eliminado correctamente');
     }
 }

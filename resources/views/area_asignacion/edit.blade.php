@@ -1,5 +1,6 @@
 @extends('layouts.app')
 
+@section('title', 'Editar Área de Asignación')
 @section('content')
 <div class="container mt-4">
     <div class="form-container">

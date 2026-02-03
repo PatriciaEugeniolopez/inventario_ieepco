@@ -1,13 +1,17 @@
 @extends('layouts.app')
 
+@section('title', 'Registrar Área de Asignación')
 @section('content')
-<div class="container mt-4">
-    <div class="form-container">
+<div class="container mt-5">
+    <div class="row justify-content-center">
         <div class="d-flex justify-content-between align-items-center mb-4">
+            <button type="submit" class="btn btn-secondary">
+                <a href="{{ route('area_asignacion.index') }}">
+                    Volver
+                </a>
+            </button>
             <h2>Nueva Área de Asignación</h2>
-            <a href="{{ route('area_asignacion.index') }}" class="btn btn-secondary">
-                Volver
-            </a>
+            
         </div>
 
         @if($errors->any())

@@ -72,9 +72,7 @@ class AreaAsignacionController extends Controller
             ->with('success', 'Área actualizada exitosamente.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+    
     public function destroy(AreaAsignacion $area_asignacion)
     {
         $area_asignacion->delete();

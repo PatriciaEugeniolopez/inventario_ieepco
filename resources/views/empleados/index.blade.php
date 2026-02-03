@@ -1,171 +1,137 @@
 @extends('layouts.admin')
 
+@section('title', 'Empleados')
 @section('content')
-<div class="container-fluid mt-4">
-    <div class="table-container">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h2>Registro de Empleados</h2>
-            <a href="{{ route('empleados.create') }}" class="btn btn-registrar">
-                Registrar Empleado
-            </a>
-        </div>
+<div class="container mt-4">
 
-        @if(session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
+    <h2>Registro de Empleados</h2>
+    <a href="{{ route('empleados.create') }}" class="btn btn-registrar">
+        Registrar Empleado
+    </a>
+
+
+    @if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        {{ session('success') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    @endif
+
+    <p>Mostrando {{ $empleados->firstItem() }}-{{ $empleados->lastItem() }}
+        de {{ $empleados->total() }} elementos.
+        @if(request()->query())
+        <a href="{{ route('empleados.index') }}"
+            class="btn btn-sm btn-secondary ms-2">
+            <i class="fas fa-times"></i> Limpiar filtros
+        </a>
         @endif
+    </p>
 
-        <div class="info-bar">
-            <p class="mb-0">Mostrando <strong>1-{{ count($empleados) }}</strong> de <strong>{{ count($empleados) }}</strong> elementos.</p>
-        </div>
 
+
+    <form method="GET" action="{{ route('empleados.index') }}">
         <div class="table-responsive">
-            <table class="table table-hover">
+            <table class="table table-bordered table-hover text-center tabla-usuarios-small">
                 <thead>
                     <tr>
                         <th>#</th>
-                        <th>Nombre Empleado</th>
-                        <th>Apellido Paterno</th>
-                        <th>Apellido Materno</th>
-                        <th>Puesto</th>
-                        <th>Area Asignacion</th>
-                        <th>Acciones</th>
+                        <th>
+                            Nombre Empleado
+                            <input type="text"
+                                name="nombre"
+                                value="{{ request('nombre') }}"
+                                class="form-control form-control-sm"
+                                placeholder="Buscar nombre"
+                                onchange="this.form.submit()">
+                        </th>
+                        <th>
+                            Apellido Paterno
+                            <input type="text"
+                                name="apellido_p"
+                                value="{{ request('apellido_p') }}"
+                                class="form-control form-control-sm"
+                                placeholder="Buscar apellido paterno"
+                                onchange="this.form.submit()">
+                        </th>
+                        <th>
+                            Apellido Materno
+                            <input type="text"
+                                name="apellido_m"
+                                value="{{ request('apellido_m') }}"
+                                class="form-control form-control-sm"
+                                placeholder="Buscar apellido materno"
+                                onchange="this.form.submit()">
+                        </th>
+                        <th>
+                            Puesto
+                            <input type="text"
+                                name="puesto"
+                                value="{{ request('puesto') }}"
+                                class="form-control form-control-sm"
+                                placeholder="Buscar puesto"
+                                onchange="this.form.submit()">
+                        </th>
+                        <th>
+                            Área de asignación
+                            <input type="text"
+                                name="fk_area_trabajo"
+                                value="{{ request('fk_area_trabajo') }}"
+                                class="form-control form-control-sm"
+                                placeholder="Buscar area"
+                                onchange="this.form.submit()">
+                        </th>
+                        <th style="width:130px">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
                     @forelse($empleados as $index => $empleado)
-                        <tr>
-                            <td style="color: #8B1538; font-weight: 600;">{{ $index + 1 }}</td>
-                            <td style="color: #4169E1;">{{ strtoupper($empleado->nombre_empleado) }}</td>
-                            <td>{{ strtoupper($empleado->apellido_p) }}</td>
-                            <td>{{ strtoupper($empleado->apellido_m ?? '') }}</td>
-                            <td>{{ strtoupper($empleado->puesto ?? '') }}</td>
-                            <td>{{ strtoupper($empleado->areaAsignacion->nombre_asignacion ?? '') }}</td>
-                            <td class="action-icons text-center">
-                                <a href="{{ route('empleados.show', $empleado->id_empleado) }}" 
-                                   title="Ver">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                <a href="{{ route('empleados.edit', $empleado->id_empleado) }}" 
-                                   title="Editar">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <form action="{{ route('empleados.destroy', $empleado->id_empleado) }}" 
-                                      method="POST" 
-                                      style="display: inline-block;"
-                                      onsubmit="return confirm('¿Está seguro de eliminar este empleado?');">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" 
-                                            style="border: none; background: none; cursor: pointer; padding: 0;" 
-                                            title="Eliminar">
-                                        <i class="fas fa-trash"></i>
-                                    </button>
-                                </form>
-                            </td>
-                        </tr>
+                    <tr>
+                        <td>{{ $index + 1 }}</td>
+                        <td>{{ strtoupper($empleado->nombre_empleado) }}</td>
+                        <td>{{ strtoupper($empleado->apellido_p) }}</td>
+                        <td>{{ strtoupper($empleado->apellido_m ?? '') }}</td>
+                        <td>{{ strtoupper($empleado->puesto ?? '') }}</td>
+                        <td>{{ strtoupper($empleado->areaAsignacion->nombre_asignacion ?? '') }}</td>
+                        <td class="text-center">
+                            
+                            <a href="{{ route('empleados.show', $empleado->id_empleado) }}"
+                                class="btn btn-sm btn-success"
+                                title="Ver">
+                                <i class="fas fa-eye"></i>
+                            </a>
+                            <a href="{{ route('empleados.edit', $empleado->id_empleado) }}"
+                                class="btn btn-sm btn-primary"
+                                title="Editar">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <form action="{{ route('empleados.destroy', $empleado->id_empleado) }}"
+                                method="POST"
+                                style="display: inline-block;"
+                                onsubmit="return confirm('¿Está seguro de eliminar este empleado?');">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit"
+                                    class="btn btn-sm btn-danger"
+                                    title="Eliminar">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </form>
+                        </td>
+                    </tr>
                     @empty
-                        <tr>
-                            <td colspan="7" class="text-center">No hay empleados registrados</td>
-                        </tr>
+                    <tr>
+                        <td colspan="7" class="text-center">No hay empleados registrados</td>
+                    </tr>
                     @endforelse
                 </tbody>
             </table>
+            <div class="panel-footer text-center">
+                {{ $empleados->appends(request()->query())->links('pagination::bootstrap-4') }}
+            </div>
         </div>
-    </div>
+    </form>
+
 </div>
 
-<style>
-    .table-container {
-        background: white;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-    
-    .btn-registrar {
-        background-color: #8B1538;
-        color: white;
-        border: none;
-        padding: 8px 20px;
-        font-size: 14px;
-    }
-    
-    .btn-registrar:hover {
-        background-color: #6d0f2a;
-        color: white;
-    }
-    
-    .info-bar {
-        background-color: #4a4a4a;
-        color: white;
-        padding: 10px 15px;
-        margin: 0 -15px;
-    }
-    
-    .table {
-        border-collapse: separate;
-        border-spacing: 0;
-    }
-    
-    .table thead th {
-        background-color: white;
-        color: #8B1538;
-        font-weight: 700;
-        border-bottom: 1px solid #dee2e6;
-        border-top: 1px solid #dee2e6;
-        padding: 12px;
-        text-transform: uppercase;
-        font-size: 11px;
-        white-space: nowrap;
-    }
-    
-    .table tbody td {
-        padding: 12px;
-        vertical-align: middle;
-        font-size: 13px;
-        border-bottom: 1px solid #e9ecef;
-        color: #333;
-    }
-    
-    .table tbody tr {
-        background-color: white;
-    }
-    
-    .table tbody tr:nth-child(even) {
-        background-color: #f8f9fa;
-    }
-    
-    .table tbody tr:hover {
-        background-color: #f1f3f5;
-    }
-    
-    .action-icons {
-        white-space: nowrap;
-    }
-    
-    .action-icons a,
-    .action-icons button {
-        color: #8B1538;
-        margin: 0 6px;
-        font-size: 16px;
-        transition: all 0.2s;
-        text-decoration: none;
-    }
-    
-    .action-icons a:hover,
-    .action-icons button:hover {
-        color: #6d0f2a;
-        transform: scale(1.1);
-    }
-    
-    .action-icons button i {
-        color: #8B1538;
-    }
-    
-    .action-icons button:hover i {
-        color: #6d0f2a;
-    }
-</style>
+
 @endsection

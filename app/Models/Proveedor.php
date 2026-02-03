@@ -38,6 +38,7 @@ class Proveedor extends Model
     protected $fillable = [
         'nombre_prov',
         'rfc',
+        'telefono',
         'calle',
         'numero_ext',
         'numero_int',
@@ -47,6 +48,11 @@ class Proveedor extends Model
         'pais',
         'codigo_postal',
     ];
+    public function getRouteKeyName()
+    {
+        return 'id_prov';
+    }
+
 
     /**
      * The attributes that should be cast.

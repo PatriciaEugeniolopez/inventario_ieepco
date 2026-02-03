@@ -5,85 +5,123 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Sistema-de-inventario')</title>
-
+    <!-- jQuery (AJAX sencillo) -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@3.4.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Font Awesome 6.5.1 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Tus CSS personalizados -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
+
+    <link href="{{ asset('css/sidebar.css') }}" rel="stylesheet">
+
 </head>
 
 <body class="hold-transition skin-red-light sidebar-mini">
-
-    <header class="navbar navbar-inverse">
-        <div class="container-fluid">
-            <div class="navbar-header">
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+            <div class="container-fluid">
                 <a class="navbar-brand" href="{{ route('dashboard') }}">
                     SISTEMA DE INVENTARIO DE INFORMÁTICA
                 </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('dashboard') }}">Inicio</a>
+                        </li>
+                        <li class="nav-item">
+                            <form method="POST" action="{{ route('logout') }}" class="d-inline">
+                                @csrf
+                                <button class="btn btn-link nav-link text-white text-decoration-none" type="submit" style="border: none;">
+                                    Salir ({{ Auth::user()->nombre ?? 'Usuario' }})
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
             </div>
-
-            <ul class="nav navbar-nav navbar-right">
-                <li><a href="{{ route('dashboard') }}">Inicio</a></li>
-
-                <li>
-                    <form method="POST" action="{{ route('logout') }}" style="display:inline;">
-                        @csrf
-                        <button class="btn btn-link navbar-btn">
-                            Salir ({{ Auth::user()->nombre ?? 'Usuario' }})
-                        </button>
-                    </form>
-                </li>
-            </ul>
-        </div>
+        </nav>
     </header>
-
     <div class="container-fluid">
         <div class="row">
-
             <!-- SIDEBAR -->
             <aside class="col-sm-2">
                 <img src="{{ asset('imagenes/iee2.png') }}" class="img-responsive" style="margin-bottom:15px;">
 
-                <h4>Menú</h4>
-                <ul class="nav nav-pills nav-stacked">
-                    <li><a href="{{ route('dashboard') }}">Inicio</a></li>
-                    <li><a href="#">Inventarios</a></li>
-                    <li><a href="{{ route('area_asignacion.index') }}">Áreas Asignación</a></li>
-                    <li><a href="{{ route('empleados.index') }}">Empleados</a></li>
-                    <li><a href="{{ route('proveedores.index') }}">Proveedores</a></li>
-                </ul>
+                <div class="sidebar-menu">
+                    <h4>Menú</h4>
+                    <ul>
+                        <li class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                            <a href="{{ route('dashboard') }}">
+                                <i class="fa fa-home"></i> Inicio
+                            </a>
+                        </li>
+                        <li class="{{ request()->routeIs('mobiliarios.*') ? 'active' : '' }}">
+                            <a href="{{ route('mobiliarios.index') }}">
+                                <i class="fas fa-book"></i> Inventarios
+                            </a>
+                        </li>
+                        <li class="{{ request()->routeIs('area_asignacion.*') ? 'active' : '' }}">
+                            <a href="{{ route('area_asignacion.index') }}">
+                                <i class="fa fa-eye"></i> Áreas Asignación
+                            </a>
+                        </li>
+                        <li class="{{ request()->routeIs('empleados.*') ? 'active' : '' }}">
+                            <a href="{{ route('empleados.index') }}">
+                                <i class="fas fa-users"></i> Empleados
+                            </a>
+                        </li>
+                        <li class="{{ request()->routeIs('proveedor.*') ? 'active' : '' }}">
+                            <a href="{{ route('proveedor.index') }}">
+                                <i class="fas fa-truck"></i> Proveedores
+                            </a>
+                        </li>
+                    </ul>
+                </div>
 
-                <hr>
-
-                <h4>Catálogos</h4>
-                <ul class="nav nav-pills nav-stacked">
-                    <li><a href="{{ route('marca.index') }}">Marcas</a></li>
-                    <li><a href="{{ route('modelo.index') }}">Modelos</a></li>
-                    <li><a href="{{ route('usuarios.index') }}">Usuarios</a></li>
-                </ul>
+                <div class="sidebar-menu">
+                    <h4>Catálogos</h4>
+                    <ul>
+                        <li class="{{ request()->routeIs('marca.*') ? 'active' : '' }}">
+                            <a href="{{ route('marca.index') }}">
+                                <i class="fas fa-copyright"></i> Marcas
+                            </a>
+                        </li>
+                        <li class="{{ request()->routeIs('modelo.*') ? 'active' : '' }}">
+                            <a href="{{ route('modelo.index') }}">
+                                <i class="fa fa-info-circle"></i> Modelos
+                            </a>
+                        </li>
+                        <li class="{{ request()->routeIs('usuarios.*') ? 'active' : '' }}">
+                            <a href="{{ route('usuarios.index') }}">
+                                <i class="fa fa-user"></i> Usuarios
+                            </a>
+                        </li>
+                    </ul>
+                </div>
             </aside>
 
-           
             <main class="col-sm-10">
-
-                <!--<ol class="breadcrumb">
-                    <li><a href="{{ route('dashboard') }}">IEEPCO</a></li>
-                    @yield('breadcrumbs')
-                </ol>-->
-
                 @yield('content')
-
             </main>
-
-
         </div>
     </div>
-    <!-- Breadcrumbs (opcional) 
-<footer class="footer">
-    <div class="container">
-        <p class="pull-left">&copy; IEEPCO {{ date('Y') }}</p>
-        <p class="pull-right">Laravel</p>
-    </div>
-</footer>-->
 
+    <!-- SCRIPTS -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+ 
+
+    @yield('scripts')
 </body>
 
 </html>

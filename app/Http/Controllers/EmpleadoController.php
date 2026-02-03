@@ -8,28 +8,46 @@ use Illuminate\Http\Request;
 
 class EmpleadoController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        $empleados = Empleado::with('areaAsignacion')->get();
+        $query = Empleado::with('areaAsignacion');
+
+        if ($request->filled('nombre')) {
+            $query->where('nombre_empleado', 'like', '%' . $request->nombre . '%');
+        }
+
+        if ($request->filled('apellido_p')) {
+            $query->where('apellido_p', 'like', '%' . $request->apellido_p . '%');
+        }
+
+        if ($request->filled('apellido_m')) {
+            $query->where('apellido_m', 'like', '%' . $request->apellido_m . '%');
+        }
+
+        if ($request->filled('puesto')) {
+            $query->where('puesto', 'like', '%' . $request->puesto . '%');
+        }
+
+        if ($request->filled('fk_area_trabajo')) {
+            $query->whereHas('areaAsignacion', function ($q) use ($request) {
+                $q->where('nombre_asignacion', 'like', '%' . $request->fk_area_trabajo . '%');
+            });
+        }
+
+        $empleados = $query->paginate(20);
         $areas = AreaAsignacion::all();
+
         return view('empleados.index', compact('empleados', 'areas'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         $areas = AreaAsignacion::all();
         return view('empleados.create', compact('areas'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+    
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -46,9 +64,7 @@ class EmpleadoController extends Controller
             ->with('success', 'Empleado registrado exitosamente.');
     }
 
-    /**
-     * Display the specified resource.
-     */
+    
     public function show(Empleado $empleado)
     {
         $empleado->load('areaAsignacion');
@@ -83,9 +99,7 @@ class EmpleadoController extends Controller
             ->with('success', 'Empleado actualizado exitosamente.');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
+   
     public function destroy(Empleado $empleado)
     {
         $empleado->delete();

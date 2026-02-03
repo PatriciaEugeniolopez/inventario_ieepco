@@ -2,53 +2,61 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Mobiliario extends Model
 {
+    use HasFactory;
+
     protected $table = 'mobiliario';
     protected $primaryKey = 'id_mobiliario';
     public $timestamps = false;
 
     protected $fillable = [
-        'nombre_mobiliario',
         'clave_inventario',
+        'nombre_mobiliario',
+        'id_modelofk',
+        'id_marcafk',
         'num_serie',
-        'fecha_compra',
-        'precio_unitario',
         'status_fk',
         'fk_asignacion',
         'usuario_area',
-        'id_marcafk',
-        'id_modelofk',
-        'cod_informatica',
+        'fecha_compra',
+        'precio_unitario',
         'fk_provedor',
+        'cod_informatica'
     ];
 
     /* ================= RELACIONES ================= */
 
-    /*public function marca()
+    // Marca
+    public function marca()
     {
-        return $this->belongsTo(Marca::class, 'id_marcafk', 'id');
+        return $this->belongsTo(Marca::class, 'id_marcafk');
     }
 
+    // Modelo
     public function modelo()
     {
-        return $this->belongsTo(Modelo::class, 'id_modelofk', 'id');
+        return $this->belongsTo(Modelo::class, 'id_modelofk');
     }
 
-    public function asignacion()
+    // Área de asignación
+    public function areaAsignacion()
     {
         return $this->belongsTo(AreaAsignacion::class, 'fk_asignacion', 'id_asignacion');
     }
 
-    public function personal()
+    // Usuario del sistema
+    public function user()
     {
-        return $this->belongsTo(Empleado::class, 'usuario_area', 'id_empleado');
+        return $this->belongsTo(User::class, 'usuario_area');
     }
 
-    public function condiciones()
+    // Proveedor
+    public function proveedor()
     {
-        return $this->belongsTo(Condicion::class, 'status_fk', 'id_status');
-    }*/
+        return $this->belongsTo(Proveedor::class, 'fk_provedor', 'id_prov');
+    }
 }

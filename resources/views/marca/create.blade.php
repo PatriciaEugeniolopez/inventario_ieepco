@@ -1,21 +1,41 @@
 @extends('layouts.admin')
 
+@section('title', 'Nueva Marca')
 @section('content')
-<div class="container">
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-5">
+            <div class="card">
 
-    <h3>Nueva Marca</h3>
+                <div class="card-header navbar navbar-expand-lg navbar-dark bg-dark container-fluid justify-content-center">
+                    <h3 class="text-white">Nueva Marca</h3>
+                </div>
 
-    <form method="POST" action="{{ route('marca.store') }}">
-        @csrf
+                <div class="card-body">
+                    <form method="POST" action="{{ route('marca.store') }}">
+                    @csrf
 
-        <div class="form-group">
-            <label>Nombre Marca</label>
-            <input type="text" name="nombre_marca" class="form-control" required>
+                    <div class="mb-5">
+                        </br>
+                        <label>Nombre Marca</label>
+                        <input type="text" name="nombre_marca" class="form-control" required>
+                    </div>
+
+                    <button class="btn btn-registrar">Guardar</button>
+                    <a href="{{ route('marca.index') }}" class="btn btn-secondary">Cancelar</a>
+                </form>
+                </div>
+
+
+                
+            </div>
+
+
         </div>
 
-        <button class="btn btn-danger">Guardar</button>
-        <a href="{{ route('marca.index') }}" class="btn btn-default">Cancelar</a>
-    </form>
+    </div>
+
+
 
 </div>
 @endsection
