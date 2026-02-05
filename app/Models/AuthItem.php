@@ -24,7 +24,6 @@ class AuthItem extends Model
         'updated_at',
     ];
 
-    // Relación con usuarios
     public function users()
     {
         return $this->belongsToMany(
@@ -35,13 +34,11 @@ class AuthItem extends Model
         )->withPivot('created_at');
     }
 
-    // Scope para obtener solo roles
     public function scopeRoles($query)
     {
         return $query->where('type', self::TYPE_ROLE);
     }
 
-    // Scope para obtener solo permisos
     public function scopePermissions($query)
     {
         return $query->where('type', self::TYPE_PERMISSION);

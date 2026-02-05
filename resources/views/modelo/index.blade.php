@@ -3,9 +3,21 @@
 @section('content')
 <div class="container mt-4">
     <h2>Modelos</h2>
-    <a href="{{ route('modelo.create') }}" class="btn btn-registrar">
+    <a href="{{ route('modelo.create') }}" 
+       class="btn btn-registrar">
         Ingresar Modelo
     </a>
+
+
+    @if(session('success'))
+    <div class="alert alert-success alert-dismissible fade show" 
+         role="alert">
+        {{ session('success') }}
+        <button type="button" 
+                class="btn-close" 
+                data-bs-dismiss="alert"></button>
+    </div>
+    @endif
 
 
     <p>Mostrando {{ $modelos->firstItem() }}-{{ $modelos->lastItem() }}
@@ -18,34 +30,35 @@
     </p>
 
     <!-- FORMULARIO-->
-    <form method="GET" action="{{ route('modelo.index') }}" id="filtroForm">
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover tabla-usuarios-small">
-                <thead>
-                    <tr>
-                        <th style="width:50px">#</th>
-                        <th>
-                            Nombre Modelo
-                            <input type="text"
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover tabla-usuarios-small">
+            <thead>
+                <tr>
+                    <th style="width:50px">#</th>
+                    <form method="GET" action="{{ route('modelo.index') }}" id="filtroForm">
+                    <th>
+                                Nombre Modelo
+                                <input type="text"
                                 name="nombre_modelo"
                                 value="{{ request('nombre_modelo') }}"
                                 class="form-control"
                                 placeholder="Buscar modelo..."
                                 onchange="document.getElementById('filtroForm').submit()">
-                        </th>
-                        <th>Marca
-                            <select name="fk_marca"
+                            </th>
+                            <th>Marca
+                                <select name="fk_marca"
                                 class="form-control"
                                 onchange="document.getElementById('filtroForm').submit()">
                                 <option value="">Todas las marcas</option>
                                 @foreach($marcas as $marca)
                                 <option value="{{ $marca->id }}"
-                                    {{ request('fk_marca') == $marca->id ? 'selected' : '' }}>
-                                    {{ $marca->nombre_marca }}
-                                </option>
-                                @endforeach
-                            </select>
-                        </th>
+                                {{ request('fk_marca') == $marca->id ? 'selected' : '' }}>
+                                {{ $marca->nombre_marca }}
+                            </option>
+                            @endforeach
+                        </select>
+                    </th>
+                </form>
                         <th class="text-center" style="width:150px">Acciones</th>
                     </tr>
                 </thead>
@@ -69,7 +82,7 @@
                             </a>
                             <form action="{{ route('modelo.destroy', $modelo->id) }}"
                                 method="POST"
-                                style="display: inline-block;"
+                                class="d-inline"
                                 onsubmit="return confirm('¿Estás seguro de eliminar este modelo?')">
                                 @csrf
                                 @method('DELETE')
@@ -83,7 +96,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="4" class="text-center">
+                        <td colspan="4"  class="text-center">
                             No se encontraron modelos.
                         </td>
                     </tr>
@@ -91,11 +104,10 @@
                 </tbody>
 
             </table>
-            <div class="panel-footer text-center">
+            <div>
                 {{ $modelos->appends(request()->query())->links('pagination::bootstrap-4') }}
             </div>
         </div>
-    </form>
     <!-- FIN DEL FORMULARIO -->
 
 </div>
@@ -114,13 +126,9 @@
 <script>
     $(document).on('click', '.btn-ver-modelo', function() {
         let modeloId = $(this).data('id');
-
         $.get('/modelo/' + modeloId, function(response) {
             $('#modalModeloContent').html(response);
-
-            let modal = new bootstrap.Modal(
-                document.getElementById('modalModelo')
-            );
+            let modal = new bootstrap.Modal(document.getElementById('modalModelo'));
             modal.show();
         }).fail(function() {
             alert('Error al cargar el modelo');

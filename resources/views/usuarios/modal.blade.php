@@ -28,10 +28,12 @@
 </div>
 
 <div class="modal-footer">
-    <a href="{{ route('usuarios.edit', $usuario->id) }}" class="btn btn-registrar">
+    <a href="{{ route('usuarios.edit', $usuario->id) }}" 
+    class="btn btn-registrar">
         Editar
     </a>
-    <a href="{{ route('usuarios.index', $usuario->id) }}" class="btn btn-secondary">
+    <a href="{{ route('usuarios.index', $usuario->id) }}" 
+    class="btn btn-secondary">
         Cerrar
     </a>
 </div>

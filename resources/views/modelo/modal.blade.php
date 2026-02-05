@@ -1,6 +1,6 @@
 <div class="modal-header bg-primary text-white">
     <h5 class="modal-title">
-        {{ $modelo->nombre_modelo }}
+        <i class="fas fa-tag"></i> {{ $modelo->nombre_modelo }}
     </h5>
     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
 </div>
@@ -40,7 +40,8 @@
 </div>
 
 <div class="modal-footer">
-    <a href="{{ route('modelo.edit', $modelo->id) }}" class="btn btn-registrar">
+    <a href="{{ route('modelo.edit', $modelo->id) }}" 
+    class="btn btn-registrar">
         <i class="fas fa-edit"></i> Editar
     </a>
 

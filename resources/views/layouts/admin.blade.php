@@ -13,11 +13,7 @@
     <!-- Font Awesome 6.5.1 -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 
-    <!-- Tus CSS personalizados -->
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
-
-    <link href="{{ asset('css/sidebar.css') }}" rel="stylesheet">
+    <link href="{{ asset('css/style.css') }}" rel="stylesheet">
 
 </head>
 
@@ -56,21 +52,50 @@
                 <img src="{{ asset('imagenes/iee2.png') }}" class="img-responsive" style="margin-bottom:15px;">
 
                 <div class="sidebar-menu">
-                    <h4>Menú</h4>
+                    <h4>Menú Principal</h4>
                     <ul>
                         <li class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
                             <a href="{{ route('dashboard') }}">
                                 <i class="fa fa-home"></i> Inicio
                             </a>
                         </li>
+                    </ul>
+                </div>
+
+                <!-- INVENTARIO -->
+                <div class="sidebar-menu">
+                    <h4>Inventario</h4>
+                    <ul>
                         <li class="{{ request()->routeIs('mobiliarios.*') ? 'active' : '' }}">
                             <a href="{{ route('mobiliarios.index') }}">
-                                <i class="fas fa-book"></i> Inventarios
+                                <i class="fas fa-box"></i> Mobiliario
                             </a>
                         </li>
+                        <li class="{{ request()->routeIs('mobiliario_asignacion.*') ? 'active' : '' }}">
+                            <a href="{{ route('mobiliario_asignacion.index') }}">
+                                <i class="fas fa-hand-holding"></i> Asignaciones
+                            </a>
+                        </li>
+                        <li class="{{ request()->routeIs('mobiliario_renta.*') ? 'active' : '' }}">
+                            <a href="{{ route('mobiliario_renta.index') }}">
+                                <i class="fas fa-calendar-alt"></i> Rentas
+                            </a>
+                        </li>
+                        <li class="{{ request()->routeIs('mobiliario_historial.*') ? 'active' : '' }}">
+                            <a href="{{ route('mobiliario_historial.index') }}">
+                                <i class="fas fa-history"></i> Historial
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- GESTIÓN -->
+                <div class="sidebar-menu">
+                    <h4>Gestión</h4>
+                    <ul>
                         <li class="{{ request()->routeIs('area_asignacion.*') ? 'active' : '' }}">
                             <a href="{{ route('area_asignacion.index') }}">
-                                <i class="fa fa-eye"></i> Áreas Asignación
+                                <i class="fas fa-building"></i> Áreas
                             </a>
                         </li>
                         <li class="{{ request()->routeIs('empleados.*') ? 'active' : '' }}">
@@ -86,6 +111,7 @@
                     </ul>
                 </div>
 
+                <!-- CATÁLOGOS -->
                 <div class="sidebar-menu">
                     <h4>Catálogos</h4>
                     <ul>
@@ -96,7 +122,7 @@
                         </li>
                         <li class="{{ request()->routeIs('modelo.*') ? 'active' : '' }}">
                             <a href="{{ route('modelo.index') }}">
-                                <i class="fa fa-info-circle"></i> Modelos
+                                <i class="fas fa-laptop"></i> Modelos
                             </a>
                         </li>
                         <li class="{{ request()->routeIs('usuarios.*') ? 'active' : '' }}">
@@ -118,9 +144,7 @@
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <!-- Select2 JS -->
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
- 
-
+   
     @yield('scripts')
 </body>
 

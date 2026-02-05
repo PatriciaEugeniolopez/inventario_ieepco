@@ -13,7 +13,8 @@
 <div class="container mt-4">
     <h2>Usuarios de sistema</h2>
 
-    <a href="{{ route('usuarios.create') }}" class="btn btn-registrar mb-3">
+    <a href="{{ route('usuarios.create') }}" 
+       class="btn btn-registrar mb-3">
         Ingresar Usuario
     </a>
 

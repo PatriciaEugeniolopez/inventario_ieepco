@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
@@ -16,8 +17,7 @@ class Marca extends Model
 
 
     public function modelos()
-{
-    return $this->hasMany(Modelo::class, 'fk_marca');
-}
-
+    {
+        return $this->hasMany(Modelo::class, 'fk_marca');
+    }
 }

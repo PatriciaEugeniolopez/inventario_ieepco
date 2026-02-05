@@ -28,33 +28,26 @@ class Mobiliario extends Model
         'cod_informatica'
     ];
 
-    /* ================= RELACIONES ================= */
-
-    // Marca
     public function marca()
     {
         return $this->belongsTo(Marca::class, 'id_marcafk');
     }
 
-    // Modelo
     public function modelo()
     {
         return $this->belongsTo(Modelo::class, 'id_modelofk');
     }
 
-    // Área de asignación
     public function areaAsignacion()
     {
         return $this->belongsTo(AreaAsignacion::class, 'fk_asignacion', 'id_asignacion');
     }
 
-    // Usuario del sistema
     public function user()
     {
         return $this->belongsTo(User::class, 'usuario_area');
     }
 
-    // Proveedor
     public function proveedor()
     {
         return $this->belongsTo(Proveedor::class, 'fk_provedor', 'id_prov');

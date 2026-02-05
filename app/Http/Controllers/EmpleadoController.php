@@ -46,7 +46,7 @@ class EmpleadoController extends Controller
         return view('empleados.create', compact('areas'));
     }
 
-    
+
 
     public function store(Request $request)
     {
@@ -64,25 +64,26 @@ class EmpleadoController extends Controller
             ->with('success', 'Empleado registrado exitosamente.');
     }
 
-    
+
     public function show(Empleado $empleado)
     {
         $empleado->load('areaAsignacion');
+
+        if (request()->ajax()) {
+            return view('empleados.modal', compact('empleado'));
+        }
+
         return view('empleados.show', compact('empleado'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
+
     public function edit(Empleado $empleado)
     {
         $areas = AreaAsignacion::all();
         return view('empleados.edit', compact('empleado', 'areas'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
+
     public function update(Request $request, Empleado $empleado)
     {
         $validated = $request->validate([
@@ -99,7 +100,7 @@ class EmpleadoController extends Controller
             ->with('success', 'Empleado actualizado exitosamente.');
     }
 
-   
+
     public function destroy(Empleado $empleado)
     {
         $empleado->delete();

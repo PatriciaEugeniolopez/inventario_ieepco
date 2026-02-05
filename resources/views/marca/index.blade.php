@@ -1,6 +1,7 @@
 @extends('layouts.admin')
 
 @section('title', 'Marcas')
+
 @section('breadcrumbs')
 <li class="active">Marca</li>
 @endsection
@@ -64,11 +65,8 @@
                         <td class="text-center">
 
                             <button
-                                class="btn btn-sm btn-success"
-                                data-toggle="modal"
-                                data-target="#modalMarca"
+                                class="btn btn-sm btn-success btn-ver-marca"
                                 data-id="{{ $marca->id }}"
-                                data-nombre="{{ $marca->nombre_marca }}"
                                 title="Ver">
                                 <i class="fas fa-eye"></i>
                             </button>
@@ -79,18 +77,6 @@
                                 title="Editar">
                                 <i class="fas fa-edit"></i>
                             </a>
-
-                            <form action="{{ route('marca.destroy', $marca->id) }}"
-                                method="POST"
-                                style="display:inline-block"
-                                onsubmit="return confirm('¿Eliminar esta marca?')">
-                                @csrf
-                                @method('DELETE')
-                                <button class="btn btn-sm btn-danger" title="Eliminar">
-                                    <i class="fas fa-trash"></i>
-                                </button>
-                            </form>
-
                         </td>
                     </tr>
                     @endforeach
@@ -103,66 +89,32 @@
     </div>
 </div>
 
-
-<div class="modal fade" id="modalMarca" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-
-            <form id="formMarca" method="POST">
-                @csrf
-                @method('PUT')
-
-                <div class="modal-header">
-                    <h4 class="modal-title">Detalle de Marca</h4>
-                    <button type="button" class="close" data-dismiss="modal">
-                        &times;
-                    </button>
-                </div>
-
-                <div class="modal-body">
-
-                    <div class="form-group">
-                        <label>Nombre de la Marca</label>
-                        <input type="text"
-                            name="nombre_marca"
-                            id="nombre_marca_modal"
-                            class="form-control"
-                            required>
-                    </div>
-
-                </div>
-
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">
-                        Cerrar
-                    </button>
-                    <button type="submit" class="btn btn-primary">
-                        Guardar Cambios
-                    </button>
-                </div>
-
-            </form>
-
+<!-- Modal Ver Marca -->
+<div class="modal fade" id="modalMarca" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" id="modalMarcaContent">
+             <!-- Contenido AJAX -->
         </div>
     </div>
 </div>
+@endsection
 
-
+@section('scripts')
 <script>
-    $('#modalMarca').on('show.bs.modal', function(event) {
-        var button = $(event.relatedTarget);
+    $(document).on('click', '.btn-ver-marca', function() {
+        let marcaId = $(this).data('id');
 
-        var id = button.data('id');
-        var nombre = button.data('nombre');
+        $.get('/marca/' + marcaId, function(response) {
+            $('#modalMarcaContent').html(response);
 
-        var modal = $(this);
-
-        modal.find('#nombre_marca_modal').val(nombre);
-
-        // Ruta dinámica para actualizar
-        modal.find('#formMarca').attr('action', '/marca/' + id);
+            let modal = new bootstrap.Modal(
+                document.getElementById('modalMarca')
+            );
+            modal.show();
+        }).fail(function() {
+            alert('Error al cargar la marca');
+        });
+      
     });
 </script>
-
-
 @endsection

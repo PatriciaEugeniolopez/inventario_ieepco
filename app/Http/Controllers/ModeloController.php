@@ -21,9 +21,10 @@ class ModeloController extends Controller
             $query->where('fk_marca', $request->fk_marca);
         }
 
-        $modelos = $query->paginate(20);
+        $modelos = $query->get();
         $marcas  = Marca::orderBy('nombre_marca')->get();
-
+        
+        $modelos = $query->paginate(20);
         return view('modelo.index', compact('modelos', 'marcas'));
     }
 

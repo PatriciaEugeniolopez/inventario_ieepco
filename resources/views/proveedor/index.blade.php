@@ -7,13 +7,17 @@
 
     <h2>Proveedores</h2>
 
-    <a href="{{ route('proveedor.create') }}" class="btn btn-registrar mb-3">
+    <a href="{{ route('proveedor.create') }}" 
+       class="btn btn-registrar mb-3">
         Registrar Proveedor
     </a>
 
     @if(session('success'))
-    <div class="alert alert-success">
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
         {{ session('success') }}
+        <button type="button" 
+                class="btn-close" 
+                data-bs-dismiss="alert"></button>
     </div>
     @endif
 

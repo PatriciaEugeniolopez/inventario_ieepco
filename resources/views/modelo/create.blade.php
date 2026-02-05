@@ -31,8 +31,6 @@
                             <input type="text" name="nombre_modelo" class="form-control" required>
                         </div>
 
-
-
                         <button class="btn btn-registrar">Guardar</button>
                         <a href="{{ route('modelo.index') }}" class="btn btn-secondary">Cancelar</a>
 

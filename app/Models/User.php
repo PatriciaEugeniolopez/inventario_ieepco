@@ -17,16 +17,15 @@ class User extends Authenticatable
     public $timestamps = false;
 
     protected $fillable = [
-    'nombre',
-    'email',
-    'password_hash',
-    'auth_key',
-    'status',
-    'fk_idempleado',
-    'created_at',
-    'updated_at',
-];
-
+        'fk_idempleado',
+        'nombre',
+        'password_hash',
+        'auth_key',
+        'email',
+        'status',
+        'created_at',
+        'updated_at',
+    ];
 
 
     protected $hidden = [
@@ -45,19 +44,13 @@ class User extends Authenticatable
         $this->attributes['password_hash'] = $value;
     }
 
-    /**
-     * Relación con el empleado
-     */
+
+    // Relación con empleado
     public function empleado()
     {
         return $this->belongsTo(Empleado::class, 'fk_idempleado', 'id_empleado');
     }
 
-    // ========== RELACIONES RBAC ==========
-
-    /**
-     * Todos los items asignados (roles y permisos)
-     */
     public function authItems()
     {
         return $this->belongsToMany(
@@ -68,9 +61,6 @@ class User extends Authenticatable
         )->withPivot('created_at');
     }
 
-    /**
-     * Solo roles asignados
-     */
     public function roles()
     {
         return $this->belongsToMany(
@@ -81,9 +71,7 @@ class User extends Authenticatable
         )->where('type', AuthItem::TYPE_ROLE);
     }
 
-    /**
-     * Solo permisos asignados directamente
-     */
+
     public function permissions()
     {
         return $this->belongsToMany(
@@ -94,53 +82,52 @@ class User extends Authenticatable
         )->where('type', AuthItem::TYPE_PERMISSION);
     }
 
-    // ========== MÉTODOS DE VERIFICACIÓN ==========
-
-    /**
-     * Verificar si el usuario tiene un rol específico
-     */
     public function hasRole($roleName)
     {
         return $this->roles()->where('name', $roleName)->exists();
     }
 
-    /**
-     * Verificar si tiene alguno de los roles
-     */
+
     public function hasAnyRole(array $roles)
     {
         return $this->roles()->whereIn('name', $roles)->exists();
     }
 
-    /**
-     * Verificar si tiene todos los roles
-     */
     public function hasAllRoles(array $roles)
     {
         return $this->roles()->whereIn('name', $roles)->count() === count($roles);
     }
 
-    /**
-     * Verificar si el usuario tiene un permiso específico
-     */
     public function hasPermission($permissionName)
     {
         return $this->permissions()->where('name', $permissionName)->exists();
     }
 
-    /**
-     * Verificar si tiene alguno de los permisos
-     */
     public function hasAnyPermission(array $permissions)
     {
         return $this->permissions()->whereIn('name', $permissions)->exists();
     }
 
-    // ========== MÉTODOS DE GESTIÓN ==========
+    // Asignaciones que registró
+    public function asignacionesRegistradas()
+    {
+        // return $this->hasMany(MobiliarioAsignacion::class, 'usuario_registra_id', 'id');
+    }
 
-    /**
-     * Asignar un rol al usuario
-     */
+    // Historial de movimientos
+    public function movimientosRealizados()
+    {
+        // return $this->hasMany(MobiliarioHistorial::class, 'user_id', 'id');
+    }
+
+    // Rentas que registró
+    public function rentasRegistradas()
+    {
+        // return $this->hasMany(MobiliarioRenta::class, 'usuario_registra_id', 'id');
+
+    }
+
+
     public function assignRole($roleName)
     {
         $role = AuthItem::where('name', $roleName)
@@ -158,9 +145,6 @@ class User extends Authenticatable
         return $this;
     }
 
-    /**
-     * Asignar un permiso al usuario
-     */
     public function assignPermission($permissionName)
     {
         $permission = AuthItem::where('name', $permissionName)
@@ -178,9 +162,7 @@ class User extends Authenticatable
         return $this;
     }
 
-    /**
-     * Remover un rol del usuario
-     */
+
     public function removeRole($roleName)
     {
         AuthAssignment::where('user_id', $this->id)
@@ -190,9 +172,6 @@ class User extends Authenticatable
         return $this;
     }
 
-    /**
-     * Remover un permiso del usuario
-     */
     public function removePermission($permissionName)
     {
         AuthAssignment::where('user_id', $this->id)
@@ -202,9 +181,6 @@ class User extends Authenticatable
         return $this;
     }
 
-    /**
-     * Sincronizar roles (reemplaza todos los roles actuales)
-     */
     public function syncRoles(array $roleNames)
     {
         // Eliminar roles actuales
@@ -222,9 +198,6 @@ class User extends Authenticatable
         return $this;
     }
 
-    /**
-     * Sincronizar permisos (reemplaza todos los permisos actuales)
-     */
     public function syncPermissions(array $permissionNames)
     {
         // Eliminar permisos actuales
@@ -242,17 +215,11 @@ class User extends Authenticatable
         return $this;
     }
 
-    /**
-     * Obtener todos los nombres de roles
-     */
     public function getRoleNames()
     {
         return $this->roles()->pluck('name')->toArray();
     }
 
-    /**
-     * Obtener todos los nombres de permisos
-     */
     public function getPermissionNames()
     {
         return $this->permissions()->pluck('name')->toArray();

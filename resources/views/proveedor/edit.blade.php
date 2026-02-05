@@ -68,7 +68,7 @@
             data-bs-dismiss="modal">
         Cancelar
     </button>
-    <button class="btn btn-primary" type="submit">
+    <button class="btn btn-registrar" type="submit">
         Guardar Cambios
     </button>
 </div>

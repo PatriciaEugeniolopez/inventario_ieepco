@@ -14,8 +14,9 @@ class MarcaController extends Controller
         if ($request->filled('nombre_marca')) {
             $query->where('nombre_marca', 'like', '%' . $request->nombre_marca . '%');
         }
-
+        $marcas = $query->get();
         $marcas = $query->paginate(20);
+
 
         return view('marca.index', compact('marcas'));
     }
@@ -42,8 +43,14 @@ class MarcaController extends Controller
     public function show($id)
     {
         $marca = Marca::findOrFail($id);
+
+        if (request()->ajax()) {
+            return view('marca.modal', compact('marca'));
+        }
+
         return view('marca.show', compact('marca'));
     }
+
 
 
     public function edit($id)

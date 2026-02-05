@@ -7,26 +7,32 @@ use Illuminate\Http\Request;
 
 class AreaAsignacionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Request $request)
     {
-        $areas = AreaAsignacion::all();
+        $query = AreaAsignacion::query();
+
+        // Filtro por nombre de asignación
+        if ($request->filled('nombre_asignacion')) {
+            $query->where('nombre_asignacion', 'like', '%' . $request->nombre_asignacion . '%');
+        }
+
+        // Filtro por responsable del área
+        if ($request->filled('responsable_area')) {
+            $query->where('responsable_area', 'like', '%' . $request->responsable_area . '%');
+        }
+
+        $areas = $query->get();
+        $areas = $query->paginate(20);
+        
         return view('area_asignacion.index', compact('areas'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         return view('area_asignacion.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+
     public function store(Request $request)
     {
         $validated = $request->validate([
@@ -40,25 +46,19 @@ class AreaAsignacionController extends Controller
             ->with('success', 'Área creada exitosamente.');
     }
 
-    /**
-     * Display the specified resource.
-     */
     public function show(AreaAsignacion $area_asignacion)
     {
+        if (request()->ajax()) {
+            return view('area_asignacion.modal', compact('area_asignacion'));
+        }
         return view('area_asignacion.show', compact('area_asignacion'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(AreaAsignacion $area_asignacion)
     {
         return view('area_asignacion.edit', compact('area_asignacion'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, AreaAsignacion $area_asignacion)
     {
         $validated = $request->validate([
@@ -72,7 +72,7 @@ class AreaAsignacionController extends Controller
             ->with('success', 'Área actualizada exitosamente.');
     }
 
-    
+
     public function destroy(AreaAsignacion $area_asignacion)
     {
         $area_asignacion->delete();

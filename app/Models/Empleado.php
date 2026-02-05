@@ -20,33 +20,43 @@ class Empleado extends Model
         'fk_area_trabajo',
     ];
 
-    /**
-     * Relación con AreaAsignacion
-     */
+    // Usuario del sistema asociado
+    public function user()
+    {
+        return $this->hasOne(User::class, 'fk_idempleado', 'id_empleado');
+    }
+
+    // Asignaciones de mobiliario a este empleado
+    public function asignacionesMobiliario()
+    {
+        // return $this->hasMany(MobiliarioAsignacion::class, 'id_empleado', 'id_empleado');
+    }
+
+    // Asignaciones activas
+    public function asignacionesActivas()
+    {
+        // return $this->hasMany(MobiliarioAsignacion::class, 'id_empleado', 'id_empleado')
+                    // ->where('estado_asignacion', 'asignado');
+    }
+
+    
     public function areaAsignacion()
     {
         return $this->belongsTo(AreaAsignacion::class, 'fk_area_trabajo', 'id_asignacion');
     }
 
-    /**
-     * Relación con Usuario (un empleado puede tener un usuario)
-     */
+  
     public function usuario()
     {
         return $this->hasOne(User::class, 'fk_idempleado', 'id_empleado');
     }
 
-    /**
-     * Verificar si el empleado ya tiene un usuario asignado
-     */
+    
     public function tieneUsuario()
     {
         return $this->usuario()->exists();
     }
 
-    /**
-     * Accessor para obtener el nombre completo del empleado
-     */
     public function getNombreCompletoAttribute()
     {
         return trim("{$this->nombre_empleado} {$this->apellido_p} {$this->apellido_m}");
