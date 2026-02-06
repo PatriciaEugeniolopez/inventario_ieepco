@@ -6,9 +6,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>@yield('title', 'IEEPCO')</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
 
- <link href="{{ asset('css/sidebar.css') }}" rel="stylesheet">
+     @vite(['resources/css/app.css', 'resources/js/app.js'])
+     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
+ 
 
 </head>
 
@@ -41,21 +43,9 @@
     </nav>
 </header>
 
-
-
-   
-
     <div class="container">
         @yield('content')
     </div>
-    <!-- Bootstrap (puedes cambiar versión después) 
-<footer class="footer">
-    <div class="container">
-        <p class="pull-left">&copy; IEEPCO {{ date('Y') }}</p>
-        <p class="pull-right">Powered by Laravel</p>
-    </div>
-</footer>-->
-
 </body>
 
 </html>

@@ -5,14 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>@yield('title', 'Sistema-de-inventario')</title>
-    <!-- jQuery (AJAX sencillo) -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <!-- Bootstrap -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Font Awesome 6.5.1 -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-
+    
+    <!-- Bootstrap, Font Awesome y jQuery  -->
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link href="{{ asset('css/style.css') }}" rel="stylesheet">
 
 </head>
@@ -71,21 +66,21 @@
                                 <i class="fas fa-box"></i> Mobiliario
                             </a>
                         </li>
-                        <li class="{{ request()->routeIs('mobiliario_asignacion.*') ? 'active' : '' }}">
+                        <!-- <li class="{{ request()->routeIs('mobiliario_asignacion.*') ? 'active' : '' }}">
                             <a href="{{ route('mobiliario_asignacion.index') }}">
                                 <i class="fas fa-hand-holding"></i> Asignaciones
                             </a>
-                        </li>
+                        </li> -->
                         <li class="{{ request()->routeIs('mobiliario_renta.*') ? 'active' : '' }}">
                             <a href="{{ route('mobiliario_renta.index') }}">
                                 <i class="fas fa-calendar-alt"></i> Rentas
                             </a>
                         </li>
-                        <li class="{{ request()->routeIs('mobiliario_historial.*') ? 'active' : '' }}">
+                        <!-- <li class="{{ request()->routeIs('mobiliario_historial.*') ? 'active' : '' }}">
                             <a href="{{ route('mobiliario_historial.index') }}">
                                 <i class="fas fa-history"></i> Historial
                             </a>
-                        </li>
+                        </li> -->
                     </ul>
                 </div>
 
@@ -140,11 +135,7 @@
         </div>
     </div>
 
-    <!-- SCRIPTS -->
-    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Select2 JS -->
-   
+ 
     @yield('scripts')
 </body>
 

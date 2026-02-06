@@ -18,18 +18,25 @@ class MobiliarioRentaController extends Controller
         $query = MobiliarioRenta::with([
             'mobiliario.modelo',
             'mobiliario.marca',
-            'proveedor',
-            'usuarioRegistra'
+            'mobiliario.proveedor'
         ]);
 
         // Filtro por estado
-        if ($request->filled('estado_renta')) {
-            $query->where('estado_renta', $request->estado_renta);
+        if ($request->filled('estado')) {
+            if ($request->estado === 'activa') {
+                $query->activas();
+            } elseif ($request->estado === 'finalizada') {
+                $query->finalizadas();
+            } elseif ($request->estado === 'vencida') {
+                $query->vencidas();
+            }
         }
 
         // Filtro por proveedor
         if ($request->filled('id_proveedor')) {
-            $query->where('id_proveedor', $request->id_proveedor);
+            $query->whereHas('mobiliario', function($q) use ($request) {
+                $q->where('fk_provedor', $request->id_proveedor);
+            });
         }
 
         // Filtro por fecha
@@ -65,14 +72,14 @@ class MobiliarioRentaController extends Controller
      */
     public function create()
     {
+        // Mobiliarios tipo renta con cantidad disponible
         $mobiliarios = Mobiliario::where('tipo_inventario', 'renta')
-                                 ->with(['modelo', 'marca'])
+                                 ->where('cantidad_disponible', '>', 0)
+                                 ->with(['modelo', 'marca', 'proveedor'])
                                  ->orderBy('nombre_mobiliario')
                                  ->get();
-        
-        $proveedores = Proveedor::orderBy('nombre_prov')->get();
 
-        return view('mobiliario_renta.create', compact('mobiliarios', 'proveedores'));
+        return view('mobiliario_renta.create', compact('mobiliarios'));
     }
 
     /**
@@ -82,54 +89,52 @@ class MobiliarioRentaController extends Controller
     {
         $validated = $request->validate([
             'id_mobiliario' => 'required|exists:mobiliario,id_mobiliario',
-            'id_proveedor' => 'required|exists:proveedor,id_prov',
+            'num_serie' => 'nullable|string|max:100',
             'cantidad' => 'required|integer|min:1',
             'fecha_inicio' => 'required|date',
             'fecha_fin' => 'required|date|after:fecha_inicio',
-            'costo_mensual' => 'required|numeric|min:0',
-            'deposito' => 'nullable|numeric|min:0',
-            'notas' => 'nullable|string',
         ], [
             'id_mobiliario.required' => 'Debe seleccionar un mobiliario',
-            'id_proveedor.required' => 'Debe seleccionar un proveedor',
             'cantidad.required' => 'La cantidad es obligatoria',
             'fecha_inicio.required' => 'La fecha de inicio es obligatoria',
             'fecha_fin.required' => 'La fecha de fin es obligatoria',
             'fecha_fin.after' => 'La fecha de fin debe ser posterior a la fecha de inicio',
-            'costo_mensual.required' => 'El costo mensual es obligatorio',
         ]);
 
         try {
             DB::beginTransaction();
 
-            // Calcular costo total
-            $inicio = new \DateTime($validated['fecha_inicio']);
-            $fin = new \DateTime($validated['fecha_fin']);
-            $meses = $inicio->diff($fin)->m + ($inicio->diff($fin)->y * 12);
+            // Verificar disponibilidad
+            $mobiliario = Mobiliario::findOrFail($validated['id_mobiliario']);
             
-            $validated['costo_total'] = $validated['costo_mensual'] * max($meses, 1);
-            $validated['usuario_registra_id'] = auth()->id;
+            if ($mobiliario->cantidad_disponible < $validated['cantidad']) {
+                return redirect()->back()
+                               ->withInput()
+                               ->with('error', 'No hay suficiente cantidad disponible. Disponible: ' . $mobiliario->cantidad_disponible);
+            }
 
+            // Crear la renta
             $renta = MobiliarioRenta::create($validated);
 
-            // Actualizar mobiliario
-            $mobiliario = Mobiliario::findOrFail($validated['id_mobiliario']);
+            // Actualizar cantidades del mobiliario
             $mobiliario->cantidad_total += $validated['cantidad'];
             $mobiliario->cantidad_disponible += $validated['cantidad'];
             $mobiliario->save();
 
-            // Registrar en historial
-            \App\Models\MobiliarioHistorial::create([
-                'id_mobiliario' => $mobiliario->id_mobiliario,
-                'tipo_movimiento' => 'entrada',
-                'cantidad' => $validated['cantidad'],
-                'cantidad_anterior' => $mobiliario->cantidad_total - $validated['cantidad'],
-                'cantidad_nueva' => $mobiliario->cantidad_total,
-                'user_id' => auth()->id,
-                'referencia_id' => $renta->id_renta,
-                'tipo_referencia' => 'renta',
-                'observaciones' => 'Entrada por renta de proveedor: ' . $renta->proveedor->nombre_prov
-            ]);
+            // Registrar en historial (si tienes esta tabla)
+            if (class_exists('\App\Models\MobiliarioHistorial')) {
+                \App\Models\MobiliarioHistorial::create([
+                    'id_mobiliario' => $mobiliario->id_mobiliario,
+                    'tipo_movimiento' => 'entrada',
+                    'cantidad' => $validated['cantidad'],
+                    'cantidad_anterior' => $mobiliario->cantidad_total - $validated['cantidad'],
+                    'cantidad_nueva' => $mobiliario->cantidad_total,
+                    'user_id' => auth()->id,
+                    'referencia_id' => $renta->id_renta,
+                    'tipo_referencia' => 'renta',
+                    'observaciones' => 'Entrada por renta de proveedor: ' . ($mobiliario->proveedor->nombre_prov ?? 'N/A')
+                ]);
+            }
 
             DB::commit();
 
@@ -152,8 +157,7 @@ class MobiliarioRentaController extends Controller
         $mobiliario_renta->load([
             'mobiliario.modelo',
             'mobiliario.marca',
-            'proveedor',
-            'usuarioRegistra'
+            'mobiliario.proveedor'
         ]);
 
         if (request()->ajax()) {
@@ -168,24 +172,15 @@ class MobiliarioRentaController extends Controller
      */
     public function edit(MobiliarioRenta $mobiliario_renta)
     {
-        // Solo permitir editar si está activa
-        if ($mobiliario_renta->estado_renta !== 'activa') {
+        // Solo permitir editar si está activa (no tiene fecha de devolución)
+        if ($mobiliario_renta->fecha_devolucion) {
             return redirect()->route('mobiliario_renta.index')
                            ->with('error', 'Solo se pueden editar rentas activas');
         }
 
-        $mobiliarios = Mobiliario::where('tipo_inventario', 'renta')
-                                 ->with(['modelo', 'marca'])
-                                 ->orderBy('nombre_mobiliario')
-                                 ->get();
-        
-        $proveedores = Proveedor::orderBy('nombre_prov')->get();
+        $mobiliario_renta->load(['mobiliario.modelo', 'mobiliario.marca', 'mobiliario.proveedor']);
 
-        return view('mobiliario_renta.edit', compact(
-            'mobiliario_renta',
-            'mobiliarios',
-            'proveedores'
-        ));
+        return view('mobiliario_renta.edit', compact('mobiliario_renta'));
     }
 
     /**
@@ -193,31 +188,49 @@ class MobiliarioRentaController extends Controller
      */
     public function update(Request $request, MobiliarioRenta $mobiliario_renta)
     {
-        if ($mobiliario_renta->estado_renta !== 'activa') {
+        if ($mobiliario_renta->fecha_devolucion) {
             return redirect()->route('mobiliario_renta.index')
                            ->with('error', 'Solo se pueden editar rentas activas');
         }
 
         $validated = $request->validate([
             'fecha_fin' => 'required|date|after:fecha_inicio',
-            'costo_mensual' => 'required|numeric|min:0',
-            'deposito' => 'nullable|numeric|min:0',
-            'notas' => 'nullable|string',
+            'cantidad' => 'required|integer|min:1',
         ]);
 
         try {
-            // Recalcular costo total
-            $inicio = new \DateTime($mobiliario_renta->fecha_inicio);
-            $fin = new \DateTime($validated['fecha_fin']);
-            $meses = $inicio->diff($fin)->m + ($inicio->diff($fin)->y * 12);
-            
-            $validated['costo_total'] = $validated['costo_mensual'] * max($meses, 1);
+            DB::beginTransaction();
+
+            // Si cambia la cantidad, ajustar el mobiliario
+            if ($validated['cantidad'] != $mobiliario_renta->cantidad) {
+                $diferencia = $validated['cantidad'] - $mobiliario_renta->cantidad;
+                
+                $mobiliario = $mobiliario_renta->mobiliario;
+                
+                if ($diferencia > 0) {
+                    // Aumentó la cantidad - verificar disponibilidad
+                    if ($mobiliario->cantidad_disponible < $diferencia) {
+                        DB::rollBack();
+                        return redirect()->back()
+                                       ->withInput()
+                                       ->with('error', 'No hay suficiente cantidad disponible');
+                    }
+                }
+                
+                $mobiliario->cantidad_total += $diferencia;
+                $mobiliario->cantidad_disponible += $diferencia;
+                $mobiliario->save();
+            }
 
             $mobiliario_renta->update($validated);
+
+            DB::commit();
 
             return redirect()->route('mobiliario_renta.index')
                            ->with('success', 'Renta actualizada exitosamente.');
         } catch (\Exception $e) {
+            DB::rollBack();
+            
             return redirect()->back()
                            ->withInput()
                            ->with('error', 'Error al actualizar renta: ' . $e->getMessage());
@@ -225,18 +238,17 @@ class MobiliarioRentaController extends Controller
     }
 
     /**
-     * Finalizar renta
+     * Finalizar renta (marcar fecha de devolución)
      */
     public function finalizar(Request $request, MobiliarioRenta $mobiliario_renta)
     {
-        if ($mobiliario_renta->estado_renta !== 'activa') {
+        if ($mobiliario_renta->fecha_devolucion) {
             return redirect()->route('mobiliario_renta.index')
                            ->with('error', 'Esta renta ya fue finalizada');
         }
 
         $validated = $request->validate([
             'fecha_devolucion' => 'required|date',
-            'notas' => 'nullable|string',
         ]);
 
         try {
@@ -244,8 +256,6 @@ class MobiliarioRentaController extends Controller
 
             $mobiliario_renta->update([
                 'fecha_devolucion' => $validated['fecha_devolucion'],
-                'estado_renta' => 'finalizada',
-                'notas' => $validated['notas'] ?? $mobiliario_renta->notas,
             ]);
 
             // Reducir stock del mobiliario
@@ -262,18 +272,20 @@ class MobiliarioRentaController extends Controller
             
             $mobiliario->save();
 
-            // Registrar en historial
-            \App\Models\MobiliarioHistorial::create([
-                'id_mobiliario' => $mobiliario->id_mobiliario,
-                'tipo_movimiento' => 'salida',
-                'cantidad' => $mobiliario_renta->cantidad,
-                'cantidad_anterior' => $mobiliario->cantidad_total + $mobiliario_renta->cantidad,
-                'cantidad_nueva' => $mobiliario->cantidad_total,
-                'user_id' => auth()->id,
-                'referencia_id' => $mobiliario_renta->id_renta,
-                'tipo_referencia' => 'renta',
-                'observaciones' => 'Salida por finalización de renta'
-            ]);
+            // Registrar en historial (si existe)
+            if (class_exists('\App\Models\MobiliarioHistorial')) {
+                \App\Models\MobiliarioHistorial::create([
+                    'id_mobiliario' => $mobiliario->id_mobiliario,
+                    'tipo_movimiento' => 'salida',
+                    'cantidad' => $mobiliario_renta->cantidad,
+                    'cantidad_anterior' => $mobiliario->cantidad_total + $mobiliario_renta->cantidad,
+                    'cantidad_nueva' => $mobiliario->cantidad_total,
+                    'user_id' => auth()->id,
+                    'referencia_id' => $mobiliario_renta->id_renta,
+                    'tipo_referencia' => 'renta_devolucion',
+                    'observaciones' => 'Salida por devolución de renta'
+                ]);
+            }
 
             DB::commit();
 
@@ -288,33 +300,22 @@ class MobiliarioRentaController extends Controller
     }
 
     /**
-     * Renovar renta
+     * Renovar/extender renta
      */
     public function renovar(Request $request, MobiliarioRenta $mobiliario_renta)
     {
-        if ($mobiliario_renta->estado_renta !== 'activa') {
+        if ($mobiliario_renta->fecha_devolucion) {
             return redirect()->route('mobiliario_renta.index')
                            ->with('error', 'Solo se pueden renovar rentas activas');
         }
 
         $validated = $request->validate([
             'nueva_fecha_fin' => 'required|date|after:' . $mobiliario_renta->fecha_fin,
-            'notas' => 'nullable|string',
         ]);
 
         try {
-            // Calcular costo adicional
-            $inicio = new \DateTime($mobiliario_renta->fecha_fin);
-            $fin = new \DateTime($validated['nueva_fecha_fin']);
-            $meses_adicionales = $inicio->diff($fin)->m + ($inicio->diff($fin)->y * 12);
-            
-            $costo_adicional = $mobiliario_renta->costo_mensual * max($meses_adicionales, 1);
-
             $mobiliario_renta->update([
                 'fecha_fin' => $validated['nueva_fecha_fin'],
-                'costo_total' => $mobiliario_renta->costo_total + $costo_adicional,
-                'estado_renta' => 'renovada',
-                'notas' => $validated['notas'] ?? $mobiliario_renta->notas,
             ]);
 
             return redirect()->route('mobiliario_renta.index')
@@ -330,10 +331,14 @@ class MobiliarioRentaController extends Controller
      */
     public function activas()
     {
-        $rentas = MobiliarioRenta::with(['mobiliario.modelo', 'mobiliario.marca', 'proveedor'])
-                                 ->activas()
-                                 ->orderBy('fecha_fin', 'asc')
-                                 ->get();
+        $rentas = MobiliarioRenta::with([
+                'mobiliario.modelo', 
+                'mobiliario.marca', 
+                'mobiliario.proveedor'
+            ])
+            ->activas()
+            ->orderBy('fecha_fin', 'asc')
+            ->get();
 
         return view('mobiliario_renta.activas', compact('rentas'));
     }
@@ -345,47 +350,15 @@ class MobiliarioRentaController extends Controller
     {
         $dias = $request->filled('dias') ? $request->dias : 30;
         
-        $rentas = MobiliarioRenta::with(['mobiliario.modelo', 'mobiliario.marca', 'proveedor'])
-                                 ->proximasVencer($dias)
-                                 ->orderBy('fecha_fin', 'asc')
-                                 ->get();
+        $rentas = MobiliarioRenta::with([
+                'mobiliario.modelo', 
+                'mobiliario.marca', 
+                'mobiliario.proveedor'
+            ])
+            ->proximasVencer($dias)
+            ->orderBy('fecha_fin', 'asc')
+            ->get();
 
         return view('mobiliario_renta.proximas-vencer', compact('rentas', 'dias'));
-    }
-
-    /**
-     * Reporte de costos de rentas
-     */
-    public function reporteCostos(Request $request)
-    {
-        $query = MobiliarioRenta::with(['mobiliario', 'proveedor']);
-
-        if ($request->filled('fecha_desde')) {
-            $query->where('fecha_inicio', '>=', $request->fecha_desde);
-        }
-
-        if ($request->filled('fecha_hasta')) {
-            $query->where('fecha_fin', '<=', $request->fecha_hasta);
-        }
-
-        if ($request->filled('id_proveedor')) {
-            $query->where('id_proveedor', $request->id_proveedor);
-        }
-
-        $rentas = $query->get();
-        
-        $total_depositos = $rentas->sum('deposito');
-        $total_mensual = $rentas->sum('costo_mensual');
-        $total_general = $rentas->sum('costo_total');
-
-        $proveedores = Proveedor::orderBy('nombre_prov')->get();
-
-        return view('mobiliario_renta.reporte-costos', compact(
-            'rentas',
-            'total_depositos',
-            'total_mensual',
-            'total_general',
-            'proveedores'
-        ));
     }
 }

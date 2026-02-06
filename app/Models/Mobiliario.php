@@ -40,16 +40,21 @@ class Mobiliario extends Model
 
     public function areaAsignacion()
     {
-        return $this->belongsTo(AreaAsignacion::class, 'fk_asignacion', 'id_asignacion');
+        return $this->belongsTo(AreaAsignacion::class, 'fk_asignacion');
     }
 
     public function user()
     {
-        return $this->belongsTo(User::class, 'usuario_area');
+        return $this->belongsTo(User::class, 'usuario_area', 'id');
     }
 
     public function proveedor()
     {
         return $this->belongsTo(Proveedor::class, 'fk_provedor', 'id_prov');
+    }
+
+    public function rentas()
+    {
+        return $this->hasMany(MobiliarioRenta::class, 'id_mobiliario', 'id_mobiliario');
     }
 }

@@ -29,14 +29,14 @@ class Empleado extends Model
     // Asignaciones de mobiliario a este empleado
     public function asignacionesMobiliario()
     {
-        // return $this->hasMany(MobiliarioAsignacion::class, 'id_empleado', 'id_empleado');
+        return $this->hasMany(MobiliarioAsignacion::class, 'id_empleado', 'id_empleado');
     }
 
     // Asignaciones activas
     public function asignacionesActivas()
     {
-        // return $this->hasMany(MobiliarioAsignacion::class, 'id_empleado', 'id_empleado')
-                    // ->where('estado_asignacion', 'asignado');
+        return $this->hasMany(MobiliarioAsignacion::class, 'id_empleado', 'id_empleado')
+                    ->where('estado_asignacion', 'asignado');
     }
 
     

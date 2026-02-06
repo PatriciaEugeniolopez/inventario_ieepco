@@ -2,7 +2,7 @@
 @section('title', 'Registro de Usuarios')
 
 @section('content')
-<div class="container mt-5">
+<div class="container mt-3">
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card">
@@ -19,7 +19,7 @@
                         <!-- SELECCIONAR EMPLEADO CON SELECT2 -->
                         <div class="mb-3">
                             <label for="fk_idempleado" class="form-label">
-                                <i class="fas fa-user"></i> Seleccionar Empleado *
+                                <i class="fas fa-user"></i> Seleccionar Empleado
                             </label>
                             <select class="form-select select2-empleados @error('fk_idempleado') is-invalid @enderror" 
                                     id="fk_idempleado" 
@@ -58,7 +58,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="nombre" class="form-label">
-                                        <i class="fas fa-user-circle"></i> Nombre de Usuario *
+                                        <i class="fas fa-user-circle"></i> Nombre de Usuario
                                     </label>
                                     <input type="text"
                                         class="form-control @error('nombre') is-invalid @enderror"
@@ -77,7 +77,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="email" class="form-label">
-                                        <i class="fas fa-envelope"></i> Correo Electrónico *
+                                        <i class="fas fa-envelope"></i> Correo Electrónico
                                     </label>
                                     <input type="email"
                                         class="form-control @error('email') is-invalid @enderror"
@@ -97,7 +97,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="password" class="form-label">
-                                        <i class="fas fa-lock"></i> Contraseña *
+                                        <i class="fas fa-lock"></i> Contraseña
                                     </label>
                                     <input type="password"
                                         class="form-control @error('password') is-invalid @enderror"
@@ -114,7 +114,7 @@
                             <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="password_confirmation" class="form-label">
-                                        <i class="fas fa-lock"></i> Repetir Contraseña *
+                                        <i class="fas fa-lock"></i> Repetir Contraseña
                                     </label>
                                     <input type="password"
                                         class="form-control"

@@ -14,71 +14,150 @@ class MobiliarioRenta extends Model
 
     protected $fillable = [
         'id_mobiliario',
-        'id_proveedor',
+        'num_serie',
         'fecha_inicio',
         'fecha_fin',
         'fecha_devolucion',
-        'estado_renta',
-        'notas',
+        'cantidad',
     ];
 
     protected $casts = [
         'fecha_inicio' => 'date',
         'fecha_fin' => 'date',
         'fecha_devolucion' => 'date',
-        'costo_mensual' => 'decimal:2',
-        'costo_total' => 'decimal:2',
-        'deposito' => 'decimal:2',
     ];
 
-    // Relaciones
+    // ==================== RELACIONES ====================
+    
+    /**
+     * Relación con Mobiliario
+     */
     public function mobiliario()
     {
         return $this->belongsTo(Mobiliario::class, 'id_mobiliario', 'id_mobiliario');
     }
 
-    public function proveedor()
+    // ==================== ACCESORES ====================
+    
+    /**
+     * Obtener el proveedor a través del mobiliario
+     */
+    public function getProveedorAttribute()
     {
-        return $this->belongsTo(Proveedor::class, 'id_proveedor', 'id_prov');
+        return $this->mobiliario ? $this->mobiliario->proveedor : null;
     }
 
-    // Scopes
+    /**
+     * Obtener el modelo a través del mobiliario
+     */
+    public function getModeloAttribute()
+    {
+        return $this->mobiliario ? $this->mobiliario->modelo : null;
+    }
+
+    /**
+     * Obtener la marca a través del mobiliario
+     */
+    public function getMarcaAttribute()
+    {
+        return $this->mobiliario ? $this->mobiliario->marca : null;
+    }
+
+    /**
+     * Determinar si la renta está activa
+     * Una renta está activa si no tiene fecha de devolución
+     */
+    public function getEstaActivaAttribute()
+    {
+        return is_null($this->fecha_devolucion);
+    }
+
+    /**
+     * Obtener el estado de la renta
+     */
+    public function getEstadoRentaAttribute()
+    {
+        if (is_null($this->fecha_devolucion)) {
+            // Si no hay fecha de devolución, está activa
+            if ($this->fecha_fin < now()) {
+                return 'vencida';
+            }
+            return 'activa';
+        }
+        return 'finalizada';
+    }
+
+    // ==================== SCOPES ====================
+    
+    /**
+     * Scope para rentas activas (sin fecha de devolución)
+     */
     public function scopeActivas($query)
     {
-        return $query->where('estado_renta', 'activa');
+        return $query->whereNull('fecha_devolucion');
     }
 
+    /**
+     * Scope para rentas finalizadas (con fecha de devolución)
+     */
     public function scopeFinalizadas($query)
     {
-        return $query->where('estado_renta', 'finalizada');
+        return $query->whereNotNull('fecha_devolucion');
     }
 
+    /**
+     * Scope para rentas próximas a vencer
+     */
     public function scopeProximasVencer($query, $dias = 30)
     {
-        return $query->where('estado_renta', 'activa')
+        return $query->whereNull('fecha_devolucion')
                      ->whereBetween('fecha_fin', [now(), now()->addDays($dias)]);
     }
 
+    /**
+     * Scope para rentas vencidas
+     */
     public function scopeVencidas($query)
     {
-        return $query->where('estado_renta', 'activa')
+        return $query->whereNull('fecha_devolucion')
                      ->where('fecha_fin', '<', now());
     }
 
-    // Métodos auxiliares
+    // ==================== MÉTODOS AUXILIARES ====================
+    
+    /**
+     * Calcular días restantes hasta la fecha fin
+     */
     public function diasRestantes()
     {
+        if ($this->fecha_devolucion) {
+            return 0; // Ya fue devuelto
+        }
+        
         return now()->diffInDays($this->fecha_fin, false);
     }
 
+    /**
+     * Verificar si la renta está vencida
+     */
     public function estaVencida()
     {
-        return $this->estado_renta === 'activa' && $this->fecha_fin < now();
+        return is_null($this->fecha_devolucion) && $this->fecha_fin < now();
     }
 
-    public function calcularCostoTotal()
+    /**
+     * Calcular duración en días
+     */
+    public function duracionDias()
     {
-        $meses = $this->fecha_inicio->diffInMonths($this->fecha_fin);
-        return $this->costo_mensual * $meses;
+        return $this->fecha_inicio->diffInDays($this->fecha_fin);
+    }
+
+    /**
+     * Calcular duración en meses (aproximado)
+     */
+    public function duracionMeses()
+    {
+        return ceil($this->duracionDias() / 30);
     }
 }

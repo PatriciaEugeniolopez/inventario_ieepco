@@ -3,7 +3,9 @@
 @section('content')
 <div class="container mt-4">
     <h2>Áreas de Asignación</h2>
-    <a href="{{ route('area_asignacion.create') }}" class="btn-nueva-area">Nueva Área</a>
+    <a href="{{ route('area_asignacion.create') }}"
+        class="btn-nueva-area">Registrar Nueva Área
+    </a>
 
     @if(session('success'))
     <div class="alert alert-success alert-dismissible fade show" style="margin: 15px 20px;" role="alert">

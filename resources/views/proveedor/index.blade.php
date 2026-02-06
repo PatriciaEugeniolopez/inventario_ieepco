@@ -21,8 +21,9 @@
     </div>
     @endif
 
-    <table class="table table-bordered table-hover">
-        <thead class="table-light">
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover tabla-usuarios-small">
+        <thead>
             <tr>
                 <th>#</th>
                 <th>Nombre</th>
@@ -33,7 +34,7 @@
                 <th>Municipio</th>
                 <th>Estado</th>
                 <th>Código Postal</th>
-                <th style="width:130px">Acciones</th>
+                <th style="width:140px">Acciones</th>
             </tr>
         </thead>
 
@@ -84,6 +85,7 @@
             @endforeach
         </tbody>
     </table>
+    </div>
 </div>
 @endsection
 

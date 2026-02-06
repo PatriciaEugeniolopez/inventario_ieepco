@@ -12,6 +12,7 @@ class MobiliarioHistorial extends Model
     protected $table = 'mobiliario_historial';
     protected $primaryKey = 'id_historial';
     public $timestamps = false;
+    const UPDATED_AT = null;
 
     protected $fillable = [
         'id_mobiliario',

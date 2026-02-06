@@ -11,7 +11,7 @@
 
 @section('content')
 <div class="container mt-4">
-    <h2>Usuarios de sistema</h2>
+    <h3>Usuarios de sistema</h3>
 
     <a href="{{ route('usuarios.create') }}" 
        class="btn btn-registrar mb-3">
@@ -35,12 +35,12 @@
     </p>
 
     <!-- FORMULARIO CON FILTROS -->
-    <form method="GET" action="{{ route('usuarios.index') }}" id="filtroForm">
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover tabla-usuarios-small">
-                <thead>
-                    <tr>
-                        <th style="width:50px;">#</th>
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover tabla-usuarios-small">
+            <thead>
+                <tr>
+                    <th style="width:50px;">#</th>
+                    <form method="GET" action="{{ route('usuarios.index') }}" id="filtroForm">
                         <th style="width:100px;">
                             ID
                             <input type="text"
@@ -62,12 +62,13 @@
                         <th>
                             Correo Electrónico
                             <input type="text"
-                                name="email"
-                                value="{{ request('email') }}"
-                                class="form-control form-control-sm"
-                                placeholder="Buscar email..."
-                                onchange="this.form.submit()">
+                            name="email"
+                            value="{{ request('email') }}"
+                            class="form-control form-control-sm"
+                            placeholder="Buscar email..."
+                            onchange="this.form.submit()">
                         </th>
+                    </form>
                         <th class="text-center" style="width:140px;">Acciones</th>
                     </tr>
                 </thead>
@@ -129,7 +130,6 @@
 
             </table>
         </div>
-    </form>
 </div>
 
 <!-- MODAL VER USUARIO -->

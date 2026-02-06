@@ -6,9 +6,9 @@ use App\Models\Mobiliario;
 use App\Models\AreaAsignacion;
 use App\Models\Marca;
 use App\Models\Modelo;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\View\View;
 
 class MobiliarioController extends Controller
 {
@@ -17,18 +17,27 @@ class MobiliarioController extends Controller
     {
         $query = Mobiliario::with(['marca', 'modelo', 'areaAsignacion', 'user']);
 
+        // Filtro por nombre de mobiliario
         if ($request->filled('nombre_mobiliario')) {
             $query->where('nombre_mobiliario', 'like', '%' . $request->nombre_mobiliario . '%');
         }
 
+        // Filtro por número de serie 
+        if ($request->filled('num_serie')) {
+            $query->where('num_serie', 'like', '%' . $request->num_serie . '%');
+        }
+
+        // Filtro por área de asignación 
         if ($request->filled('fk_asignacion')) {
             $query->where('fk_asignacion', $request->fk_asignacion);
         }
 
+        // Filtro por marca
         if ($request->filled('id_marcafk')) {
             $query->where('id_marcafk', $request->id_marcafk);
         }
 
+        // Filtro por modelo 
         if ($request->filled('id_modelofk')) {
             $query->where('id_modelofk', $request->id_modelofk);
         }
@@ -40,6 +49,7 @@ class MobiliarioController extends Controller
             'areas'       => AreaAsignacion::orderBy('nombre_asignacion')->get(),
             'marcas'      => Marca::orderBy('nombre_marca')->get(),
             'modelos'     => Modelo::orderBy('nombre_modelo')->get(),
+            'users'       => User::orderBy('id')->get(),
         ]);
     }
 
@@ -116,7 +126,6 @@ class MobiliarioController extends Controller
             ->with('success', 'Mobiliario eliminado correctamente');
     }
 
-
     public function reporteStock(Request $request)
     {
         $query = Mobiliario::with(['modelo', 'marca']);
@@ -147,148 +156,133 @@ class MobiliarioController extends Controller
         return view('mobiliario.reporte-stock', compact('mobiliarios'));
     }
 
-    /**
-     * Ajustar stock manualmente
-     */
-    public function ajustarStock(Request $request, Mobiliario $mobiliario)
-    {
-        $validated = $request->validate([
-            'tipo_ajuste' => 'required|in:suma,resta',
-            'cantidad' => 'required|integer|min:1',
-            'observaciones' => 'required|string',
-        ]);
+    // public function ajustarStock(Request $request, Mobiliario $mobiliario)
+    // {
+    //     $validated = $request->validate([
+    //         'tipo_ajuste' => 'required|in:suma,resta',
+    //         'cantidad' => 'required|integer|min:1',
+    //         'observaciones' => 'required|string',
+    //     ]);
 
-        try {
-            DB::beginTransaction();
+    //     try {
+    //         DB::beginTransaction();
 
-            $cantidad_anterior_total = $mobiliario->cantidad_total;
-            $cantidad_anterior_disponible = $mobiliario->cantidad_disponible;
+    //         $cantidad_anterior_total = $mobiliario->cantidad_total;
 
-            if ($validated['tipo_ajuste'] === 'suma') {
-                $mobiliario->cantidad_total += $validated['cantidad'];
-                $mobiliario->cantidad_disponible += $validated['cantidad'];
-            } else {
-                if ($mobiliario->cantidad_disponible < $validated['cantidad']) {
-                    throw new \Exception('No hay suficiente stock disponible para reducir');
-                }
-                $mobiliario->cantidad_total -= $validated['cantidad'];
-                $mobiliario->cantidad_disponible -= $validated['cantidad'];
-            }
+    //         if ($validated['tipo_ajuste'] === 'suma') {
+    //             $mobiliario->cantidad_total += $validated['cantidad'];
+    //             $mobiliario->cantidad_disponible += $validated['cantidad'];
+    //         } else {
+    //             if ($mobiliario->cantidad_disponible < $validated['cantidad']) {
+    //                 throw new \Exception('No hay suficiente stock disponible para reducir');
+    //             }
+    //             $mobiliario->cantidad_total -= $validated['cantidad'];
+    //             $mobiliario->cantidad_disponible -= $validated['cantidad'];
+    //         }
 
-            $mobiliario->save();
+    //         $mobiliario->save();
 
-            // Registrar en historial
-            \App\Models\MobiliarioHistorial::create([
-                'id_mobiliario' => $mobiliario->id_mobiliario,
-                'tipo_movimiento' => 'ajuste',
-                'cantidad' => $validated['cantidad'],
-                'cantidad_anterior' => $cantidad_anterior_total,
-                'cantidad_nueva' => $mobiliario->cantidad_total,
-                'user_id' => auth()->id,
-                'observaciones' => $validated['observaciones']
-            ]);
+    //         \App\Models\MobiliarioHistorial::create([
+    //             'id_mobiliario' => $mobiliario->id_mobiliario,
+    //             'tipo_movimiento' => 'ajuste',
+    //             'cantidad' => $validated['cantidad'],
+    //             'cantidad_anterior' => $cantidad_anterior_total,
+    //             'cantidad_nueva' => $mobiliario->cantidad_total,
+    //             'usuario' => auth()->user()->name ?? auth()->user()->email ?? 'Sistema',
+    //             'observaciones' => $validated['observaciones']
+    //         ]);
 
-            DB::commit();
+    //         DB::commit();
 
-            return redirect()->back()
-                           ->with('success', 'Stock ajustado exitosamente.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            
-            return redirect()->back()
-                           ->with('error', 'Error al ajustar stock: ' . $e->getMessage());
-        }
-    }
+    //         return redirect()->back()
+    //             ->with('success', 'Stock ajustado exitosamente.');
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
 
-    /**
-     * Marcar mobiliario en reparación
-     */
-    public function marcarReparacion(Request $request, Mobiliario $mobiliario)
-    {
-        $validated = $request->validate([
-            'cantidad' => 'required|integer|min:1',
-            'observaciones' => 'required|string',
-        ]);
+    //         return redirect()->back()
+    //             ->with('error', 'Error al ajustar stock: ' . $e->getMessage());
+    //     }
+    // }
 
-        try {
-            DB::beginTransaction();
+    // public function marcarReparacion(Request $request, Mobiliario $mobiliario)
+    // {
+    //     $validated = $request->validate([
+    //         'cantidad' => 'required|integer|min:1',
+    //         'observaciones' => 'required|string',
+    //     ]);
 
-            if ($mobiliario->cantidad_disponible < $validated['cantidad']) {
-                throw new \Exception('No hay suficiente stock disponible');
-            }
+    //     try {
+    //         DB::beginTransaction();
 
-            $cantidad_anterior = $mobiliario->cantidad_disponible;
-            $mobiliario->cantidad_disponible -= $validated['cantidad'];
-            $mobiliario->cantidad_en_reparacion += $validated['cantidad'];
-            $mobiliario->save();
+    //         if ($mobiliario->cantidad_disponible < $validated['cantidad']) {
+    //             throw new \Exception('No hay suficiente stock disponible');
+    //         }
 
-            // Registrar en historial
-            \App\Models\MobiliarioHistorial::create([
-                'id_mobiliario' => $mobiliario->id_mobiliario,
-                'tipo_movimiento' => 'reparacion',
-                'cantidad' => $validated['cantidad'],
-                'cantidad_anterior' => $cantidad_anterior,
-                'cantidad_nueva' => $mobiliario->cantidad_disponible,
-                'user_id' => auth()->id,
-                'observaciones' => $validated['observaciones']
-            ]);
+    //         $cantidad_anterior = $mobiliario->cantidad_disponible;
+    //         $mobiliario->cantidad_disponible -= $validated['cantidad'];
+    //         $mobiliario->cantidad_en_reparacion += $validated['cantidad'];
+    //         $mobiliario->save();
 
-            DB::commit();
+    //         \App\Models\MobiliarioHistorial::create([
+    //             'id_mobiliario' => $mobiliario->id_mobiliario,
+    //             'tipo_movimiento' => 'reparacion',
+    //             'cantidad' => $validated['cantidad'],
+    //             'cantidad_anterior' => $cantidad_anterior,
+    //             'cantidad_nueva' => $mobiliario->cantidad_disponible,
+    //             'usuario' => auth()->user()->name ?? auth()->user()->email ?? 'Sistema',
+    //             'observaciones' => $validated['observaciones']
+    //         ]);
 
-            return redirect()->back()
-                           ->with('success', 'Mobiliario marcado en reparación.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            
-            return redirect()->back()
-                           ->with('error', 'Error: ' . $e->getMessage());
-        }
-    }
+    //         DB::commit();
 
-    /**
-     * Finalizar reparación
-     */
-    public function finalizarReparacion(Request $request, Mobiliario $mobiliario)
-    {
-        $validated = $request->validate([
-            'cantidad' => 'required|integer|min:1',
-            'observaciones' => 'nullable|string',
-        ]);
+    //         return redirect()->back()
+    //             ->with('success', 'Mobiliario marcado en reparación.');
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
 
-        try {
-            DB::beginTransaction();
+    //         return redirect()->back()
+    //             ->with('error', 'Error: ' . $e->getMessage());
+    //     }
+    // }
 
-            if ($mobiliario->cantidad_en_reparacion < $validated['cantidad']) {
-                throw new \Exception('La cantidad excede los equipos en reparación');
-            }
+    // public function finalizarReparacion(Request $request, Mobiliario $mobiliario)
+    // {
+    //     $validated = $request->validate([
+    //         'cantidad' => 'required|integer|min:1',
+    //         'observaciones' => 'nullable|string',
+    //     ]);
 
-            $cantidad_anterior = $mobiliario->cantidad_disponible;
-            $mobiliario->cantidad_en_reparacion -= $validated['cantidad'];
-            $mobiliario->cantidad_disponible += $validated['cantidad'];
-            $mobiliario->save();
+    //     try {
+    //         DB::beginTransaction();
 
-            // Registrar en historial
-            \App\Models\MobiliarioHistorial::create([
-                'id_mobiliario' => $mobiliario->id_mobiliario,
-                'tipo_movimiento' => 'entrada',
-                'cantidad' => $validated['cantidad'],
-                'cantidad_anterior' => $cantidad_anterior,
-                'cantidad_nueva' => $mobiliario->cantidad_disponible,
-                'user_id' => auth()->id,
-                'observaciones' => 'Retorno de reparación: ' . ($validated['observaciones'] ?? '')
-            ]);
+    //         if ($mobiliario->cantidad_en_reparacion < $validated['cantidad']) {
+    //             throw new \Exception('La cantidad excede los equipos en reparación');
+    //         }
 
-            DB::commit();
+    //         $cantidad_anterior = $mobiliario->cantidad_disponible;
+    //         $mobiliario->cantidad_en_reparacion -= $validated['cantidad'];
+    //         $mobiliario->cantidad_disponible += $validated['cantidad'];
+    //         $mobiliario->save();
 
-            return redirect()->back()
-                           ->with('success', 'Reparación finalizada. Stock actualizado.');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            
-            return redirect()->back()
-                           ->with('error', 'Error: ' . $e->getMessage());
-        }
-    }
+    //         \App\Models\MobiliarioHistorial::create([
+    //             'id_mobiliario' => $mobiliario->id_mobiliario,
+    //             'tipo_movimiento' => 'entrada',
+    //             'cantidad' => $validated['cantidad'],
+    //             'cantidad_anterior' => $cantidad_anterior,
+    //             'cantidad_nueva' => $mobiliario->cantidad_disponible,
+    //             'usuario' => auth()->user()->name ?? auth()->user()->email ?? 'Sistema',
+    //             'observaciones' => 'Retorno de reparación: ' . ($validated['observaciones'] ?? '')
+    //         ]);
 
+    //         DB::commit();
 
+    //         return redirect()->back()
+    //             ->with('success', 'Reparación finalizada. Stock actualizado.');
+    //     } catch (\Exception $e) {
+    //         DB::rollBack();
+
+    //         return redirect()->back()
+    //             ->with('error', 'Error: ' . $e->getMessage());
+    //     }
+    // }
 }
